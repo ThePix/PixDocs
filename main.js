@@ -7,7 +7,7 @@ const entries = []
 
 for (let filename of settings.files) {
   console.log("Doing file: " + settings.path + filename + settings.ext)
-  const lines = fs.readFileSync(settings.path + filename + settings.ext, "utf8").split('\r\n')
+  const lines = fs.readFileSync(settings.path + filename + settings.ext, "utf8").split(settings.linebreak)
   console.log(lines.length)
   let entry = false
   let namespace = false
@@ -17,41 +17,91 @@ for (let filename of settings.files) {
       namespace = md[2]
       console.log("Namespace: " + namespace)
     }
-    else if (s.match(/^ *\/\/@DOC/)) {
+    
+    else if (s.match(new RegExp('^ *\/\/' + settings.docflag))) {
       console.log("New entry")
       entry = { lines:[''] }
-      if (s.startsWith('  ')) entry.namespace = namespace
     }
+    
+    else if (s.match(new RegExp('^ *\/\/' + settings.undocflag))) {
+      entry.note = true
+      entries.push(entry)
+      entry = false
+      console.log("Note done")
+    }
+
     else if (s.match(/^ *\/\//) && entry) {
-      const s2 = s.replace(/^ *\/\/ /, '')
-      if (s2.match(/^ *$/)) {
+      const s2 = s.replace(/^ *\/\/ ?/, '')
+      const lastIndex = entry.lines.length - 1
+      if (s2 === '' || s2 === '```' || s2.startsWith('    ') || s2.startsWith('*')) {
+        if (entry.lines[lastIndex] === '') {
+          entry.lines[lastIndex] = s2
+        }
+        else {
+          entry.lines.push(s2)
+        }
         entry.lines.push('')
       }
       else {
-        entry.lines[entry.lines.length - 1] += ' ' + s2
+        if (entry.lines[lastIndex] === '') {
+          entry.lines[lastIndex] += s2
+        }
+        else {
+          entry.lines[lastIndex] += ' ' + s2
+        }
       }
     }
+    
     else if (entry) {
-      let md = s.match(/function (\w+) *\((.*)\)/)
-      if (md) {
-        entry.name = md[1]
-        entry.params = md[2]
+      const md1 = s.match(/function (\w+) *\((.*)\)/)
+      const md2 = s.match(/(var|let|const) +(\w+) *= *function *\((.*)\)/)
+      const md3 = s.match(/(\w+):function\((.*)\)/)
+      const md4 = s.match(/(\w+).(\w+) *= *function *\((.*)\)/)
+      if (md1) {
+        entry.name = md1[1]
+        entry.params = md1[2]
+        entries.push(entry)
+      }
+      else if (md2) {
+        entry.name = md2[2]
+        entry.params = md2[3]
+        entries.push(entry)
+      }
+      else if (md3) {
+        entry.name = md3[1]
+        entry.params = md3[2]
+        entry.namespace = namespace
+        entries.push(entry)
+      }
+      else if (md4) {
+        entry.name = md4[2]
+        entry.params = md4[3]
+        entry.namespace = md4[1]
         entries.push(entry)
       }
       else {
-        md = s.match(/(var|let|const) +(\w+) *= * function *\((.*)\)/)
-        if (md) {
-          entry.name = md[2]
-          entry.params = md[3]
-          entries.push(entry)
-        }
-        else {
-          console.log("Failed to process function first line: " + s)
-        }
+        console.log("Failed to process function first line: " + s)
       }
       entry = false
       console.log("Entry done")
     }
   }
-  console.log(entries)
+  
+  
+  const out = []
+  for (let entry of entries) {
+    if (!entry.note) {
+      out.push('### Function: ' + (entry.namespace ? entry.namespace + '.' : '') + entry.name)
+      out.push('')
+      out.push('_Parameters:_ ' + entry.params)
+      out.push('')
+    }
+    for (let s of entry.lines) out.push(s)
+    out.push('')
+    out.push('')
+    out.push('')
+  }
+  fs.writeFileSync(settings.path + settings.out, out.join(settings.linebreak))
+  
+  //console.log(entries)
 }
