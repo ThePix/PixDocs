@@ -23,7 +23,8 @@ function arrayRemove(ary, el) {
 const ns = {
 
   //@DOC
-  // Returns a new array based on ary, but including only those objects for which the attribute attName is equal to value.
+  // Returns a new array based on ary, but including only those objects for which the attribute attName
+  // is equal to value.
   // To filter for objects that do not have the attribute you can filter for the value undefined.
   var arrayFilterByAttribute = function(ary, attName, value) {
     return ary.filter(el => el[attName] === value)
@@ -44,7 +45,6 @@ The settings.js is used to configure. The files processed are path+files[i]+ext.
 
 ```
 const settings = {
-  language:'JavaScript',
   ext:'.js',
   path:'../QuestJS/',
   files:[
@@ -58,3 +58,5 @@ const settings = {
 
 
 Note that this assumes the Windows line terminator, CR LF.
+
+If yu want to cusomise the output, just modify the code at the end of main.js.
