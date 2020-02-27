@@ -39,3 +39,22 @@ Lines are combined into a single paragraph, except where there is a blank line (
 Functions inside a name space (object, etc.) must be indented for the system to flag it as such - and if it is not in a name space, do not indent (technically this only applies to the first line, `\\DOC`). Only one kevel of name spacing is implemented.
 
 It is assumed the output is for Github Wiki, therefore you can include some markdown, as the Wiki will handle it. Block level is not so straightforward, but you can use either three backticks or four spaces to indicate code. Tables and lists are not supported.
+
+The settings.js is used to configure. The files processed are path+files[i]+ext. The results will go into path+out.
+
+```
+const settings = {
+  language:'JavaScript',
+  ext:'.js',
+  path:'../QuestJS/',
+  files:[
+    'lib/world',
+    'lib/util',
+    'lang/lang-en',
+  ],
+  out:'docs.md',
+}
+```
+
+
+Note that this assumes the Windows line terminator, CR LF.
