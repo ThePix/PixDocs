@@ -8,18 +8,15 @@ const entries = []
 for (let filename of settings.files) {
   console.log("Doing file: " + settings.path + filename + settings.ext)
   const lines = fs.readFileSync(settings.path + filename + settings.ext, "utf8").split(settings.linebreak)
-  console.log(lines.length)
   let entry = false
   let namespace = false
   for (let s of lines) {
     const md = s.match(/^(const|var) (\w+) = {/)
     if (md) {
       namespace = md[2]
-      console.log("Namespace: " + namespace)
     }
     
     else if (s.match(new RegExp('^ *\/\/' + settings.docflag))) {
-      console.log("New entry")
       entry = { lines:[''] }
     }
     
@@ -27,7 +24,6 @@ for (let filename of settings.files) {
       entry.note = true
       entries.push(entry)
       entry = false
-      console.log("Note done")
     }
 
     else if (s.match(/^ *\/\//) && entry) {
@@ -83,25 +79,21 @@ for (let filename of settings.files) {
         console.log("Failed to process function first line: " + s)
       }
       entry = false
-      console.log("Entry done")
     }
   }
   
-  
-  const out = []
-  for (let entry of entries) {
-    if (!entry.note) {
-      out.push('### Function: ' + (entry.namespace ? entry.namespace + '.' : '') + entry.name)
-      out.push('')
-      out.push('_Parameters:_ ' + entry.params)
-      out.push('')
-    }
-    for (let s of entry.lines) out.push(s)
-    out.push('')
-    out.push('')
-    out.push('')
-  }
-  fs.writeFileSync(settings.path + settings.out, out.join(settings.linebreak))
-  
-  //console.log(entries)
 }
+console.log("Found " + entries.length + " entries.")
+
+const out = []
+for (let entry of entries) {
+  if (!entry.note) {
+    out.push('### Function: _' + (entry.namespace ? entry.namespace + '.' : '') + entry.name + '_(' + entry.params + ')')
+    out.push('')
+  }
+  for (let s of entry.lines) out.push(s)
+  out.push('')
+  out.push('')
+  out.push('')
+}
+fs.writeFileSync(settings.path + settings.out, out.join(settings.linebreak))

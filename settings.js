@@ -7,11 +7,11 @@ const settings = {
   ext:'.js',
   path:'../QuestJS/',
   files:[
-//    'lib/tmp',
     'lib/world',
     'lib/util',
-    'lang/lang-en',
+    'lib/text',
     'lib/io',
+    'lang/lang-en',
   ],
   out:'docs.md',
 }
