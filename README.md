@@ -66,4 +66,4 @@ const settings = {
 
 
 
-If yu want to cusomise the output, just modify the code at the end of main.js.
+If you want to cusomise the output, just modify the code at the end of main.js.
